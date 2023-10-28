@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+// inicializo clase clientes
 struct clientes
 {
     int nroCuenta;
@@ -12,15 +14,17 @@ struct clientes
 };
 
 
+// inicializo funciones
 void inicializoEstructura(struct clientes clientes[]);
 void checkNroCliente(int *nro);
+void checkContra(int *nro);
 
 
 void main()
 {
-    system("cls");
-    int tam = 10, nroClienteIngresado, nroContraIngresado;
-    struct clientes clientes[10];
+    system("cls"); // sirve para limpiar la pantalla
+    int tam = 10, nroClienteIngresado, ContraIngresada;
+    struct clientes clientes[tam];
     inicializoEstructura(clientes);
     
     printf("**********BIENVENIDO**********\n\n");
@@ -29,14 +33,8 @@ void main()
     checkNroCliente(&nroClienteIngresado);
 
     printf("Ingrese su contraseña: ");
-    scanf("%i", &nroContraIngresado);
-    while (nroContraIngresado < 1000 || nroContraIngresado > 9999)
-    {
-        system("cls");
-        printf("Contraseña invalida. Intente nuevamente: ");
-    }
-
-    
+    scanf("%i", &ContraIngresada);
+    checkContra(&ContraIngresada);
 }
 
 
@@ -51,8 +49,14 @@ void checkNroCliente(int *nro)
 }
 
 
-void checkContra()
+void checkContra(int *nro)
 {
+    while (*nro < 1000 || *nro > 9999)
+    {
+        system("cls");
+        printf("Contraseña invalida. Intente nuevamente: ");
+        scanf("%i", nro);
+    }
 
 }
 
