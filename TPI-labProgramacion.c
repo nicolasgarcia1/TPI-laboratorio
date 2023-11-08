@@ -71,7 +71,6 @@ void validarUsuario(int num1, int num2, bool validacion)
                 validacion = false;
             }
         }
-        return validacion;
 }
 
 void checkNroCliente(int *nro)
