@@ -160,7 +160,7 @@ void funcionCajero(identificadorCliente)
 
             break;
         default:
-            operaciones = 0;
+            operaciones = 10;
             break;
         }
     } while (operaciones < 10);
