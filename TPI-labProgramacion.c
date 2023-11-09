@@ -14,22 +14,21 @@ struct clientes
 };
 
 // inicializo funciones
-void inicializoEstructura(struct clientes clientes[10]);
-void checkNroCliente(int *nro);
-void checkContra(int *nro);
-int validarUsuario(int nroClienteIngresado, int nroContraIngresado, int valido, int identificadorCliente, struct clientes clientes[10]);
-void funcionCajero(int identificadorClienete, struct clientes clientes[10]);
+void inicializoEstructura(struct clientes clientes[]);
+int checkNroCliente(int *nro, struct clientes clientes[]);
+void checkContra(int *nro, struct clientes clientes[], int *identificadorCliente, int *intentos);
+int validarUsuario(int nroClienteIngresado, int nroContraIngresado, int valido, int identificadorCliente, struct clientes clientes[]);
+void funcionCajero(int identificadorClienete, struct clientes clientes[]);
 
 void main()
 {
-    // system("cls");
     int tam = 10, nroClienteIngresado, nroContraIngresado;
     struct clientes clientes[10];
     // system("cls"); // sirve para limpiar la pantalla
     inicializoEstructura(clientes);
     int ClienteIngresado, ContraIngresado;
     bool validacion = false;
-    int identificadorCliente = -1, intentos = 3;
+    int identificadorCliente, intentos = 3;
     int identificadorClienteRiesgo = -1;
     int alerta = 0;
     int aux,aux2, repetir = 1;
@@ -40,10 +39,12 @@ void main()
         printf("**********BIENVENIDO**********\n\n");
         printf("Por favor, ingrese su numero de cuenta: ");
         scanf("%i", &nroClienteIngresado);
-        checkNroCliente(&nroClienteIngresado);
+        identificadorCliente = checkNroCliente(&nroClienteIngresado, clientes);
         printf("Ingrese su contraseña: ");
         scanf("%i", &nroContraIngresado);
-        checkContra(&nroContraIngresado);
+        checkContra(&nroContraIngresado, clientes, &identificadorCliente, &intentos);
+
+
         for (int i = 0; i < 10; i++)
         {
             if (nroClienteIngresado == clientes[i].nroCuenta && nroContraIngresado == clientes[i].contra)
@@ -105,28 +106,73 @@ void main()
     } while (repetir == 1);
 }
 
-void checkNroCliente(int *nro)
+int checkNroCliente(int *nro, struct clientes clientes[])
 {
+    system("cls");
+
+    int identificador, i = 0;
+    bool encontrado;
+    encontrado = false;
+
     while (*nro < 100 || *nro > 999)
     {
         system("cls");
         printf("Numero de cuenta invalido. Ingrese nuevamente:");
         scanf("%i", nro);
     }
+
+    while (i < 9 && !encontrado)
+    {
+        if (clientes[i].nroCuenta == nro)
+        {
+            encontrado = true;
+            identificador = i;
+        }
+        else 
+        {
+            i++;
+        }
+    }
+
+    if (!encontrado)
+    {
+        system("cls");
+        printf("Numero de cuenta no encontrado. Intente nuevamente: ");
+        scanf("%i", nro);
+        identificador = checkNroCliente(&nro, clientes);
+    }
+    else 
+    {
+        return identificador;
+    }
 }
 
-void checkContra(int *nro)
 
+void checkContra(int *nro, struct clientes clientes[], int *identificadorCliente, int *intentos)
 {
+    bool ingresoCorrecto;
+
     while (*nro < 1000 || *nro > 9999)
     {
         system("cls");
         printf("Contraseña invalida. Intente nuevamente: ");
         scanf("%i", nro);
     }
+
+    while (clientes[*identificadorCliente].contra != nro && intentos > 0)
+    {
+        intentos--;
+        printf("Contraseña incorrecta. Intentos restantes: ", intentos);
+        printf("Ingrese nuevamente la contraseña: ");
+        scanf("%i", nro);
+        checkContra(&nro, clientes, &identificadorCliente, &intentos);
+    }
+
+
 }
 
-void funcionCajero(int identificadorCliente, struct clientes clientes[10])
+
+void funcionCajero(int identificadorCliente, struct clientes clientes[])
 {
     int opc, operaciones = 0;
     int montoMas, montoMenos;
@@ -217,6 +263,11 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[10])
     } while (operaciones < 10);
 }
 
+int validarUsuario(int nroClienteIngresado, int nroContraIngresado, int valido, int identificadorCliente, struct clientes clientes[])
+{
+
+}
+
 void inicializoEstructura(struct clientes clientes[]) // funcion para cargar los datos fuera del main
 {
     clientes[0].nroCuenta = 100;
@@ -224,11 +275,13 @@ void inicializoEstructura(struct clientes clientes[]) // funcion para cargar los
     strcpy(clientes[0].nombre, "Ariel Ortega");
     clientes[0].saldo = 50000;
     clientes[0].estado = 1;
+
     clientes[1].nroCuenta = 200;
     clientes[1].contra = 2345;
     strcpy(clientes[1].nombre, "Luis Miguel Rodriguez");
     clientes[1].saldo = 0;
     clientes[1].estado = 1;
+
     clientes[2].nroCuenta = 300;
     clientes[2].contra = 3456;
     strcpy(clientes[2].nombre, "Julio Grondona");
