@@ -17,8 +17,8 @@ struct clientes
 void inicializoEstructura(struct clientes clientes[10]);
 void checkNroCliente(int *nro);
 void checkContra(int *nro);
-void validarUsuario(int num1, int num2, bool validacion);
-void funcionCajero();
+void validarUsuario(int num1, int num2, bool validacion, int identificador);
+void funcionCajero(int identificadorClienete);
 
 void main()
 {
@@ -29,7 +29,7 @@ void main()
     inicializoEstructura(clientes);
     int ClienteIngresado, ContraIngresado;
     bool validacion = false;
-    int intentos = 3;
+    int identificadorCliente = -1, intentos = 3;
 
     do
     {
@@ -42,21 +42,23 @@ void main()
         scanf("%i", &nroContraIngresado);
         checkContra(&nroContraIngresado);
 
-        validarUsuario(nroClienteIngresado, nroContraIngresado, &validacion);
+        validarUsuario(nroClienteIngresado, nroContraIngresado, &validacion, &identificadorCliente);
 
         if (validacion = true)
         {
-            funcionCajero ();
+            funcionCajero (identificadorCliente);
         }
         if (validacion = false)
         {
             intentos = intentos - 1;
+            clientes[identificadorCliente].estado = 0;
+            printf ("No se permiten más intentos. Su cuenta ha sido bloqueada; comuníquese con la entidad bancaria.");
         }
 
     } while (intentos > 0);
 }
 
-void validarUsuario(int num1, int num2, bool validacion)
+void validarUsuario(int num1, int num2, bool validacion, int identificador)
 {
     struct clientes clientes[10];
     for (int i = 0; i < 9; i++)
@@ -64,6 +66,7 @@ void validarUsuario(int num1, int num2, bool validacion)
             if ((num1 = clientes[i].nroCuenta) && (num2 = clientes[i].contra))
             {
                 validacion = true;
+                identificador = i;
             }
             if (i = 9)
             {
@@ -94,10 +97,12 @@ void checkContra(int *nro)
     }
 }
 
-void funcionCajero()
+void funcionCajero(identificadorCliente)
 {
     struct clientes clientes[10];
     int opc, operaciones = 10;
+    int montoMas,montoMenos;
+    int nroCuentaMovimiento, movimientoDinero;
     do
     {
         printf("1. Realizar un Depósito.");
@@ -114,28 +119,51 @@ void funcionCajero()
         switch (opc)
         {
         case 1:
-            operaciones = operaciones - 1;
+            operaciones = operaciones + 1;
+            printf ("Ingrese monto del Depósito");
+            scanf ("%d", &montoMas);
+            clientes[identificadorCliente].saldo = clientes[identificadorCliente].saldo + montoMas ;
             
             break;
 
         case 2:
-            operaciones = operaciones - 1;
+            operaciones = operaciones + 1;
+            printf ("Ingrese monto del Retiro");
+            scanf ("%d", &montoMenos);
+            clientes[identificadorCliente].saldo = clientes[identificadorCliente].saldo - montoMenos ;
             break;
         case 3:
-            operaciones = operaciones - 1;
+            operaciones = operaciones + 1;
+            printf ("Su saldo es %d",clientes[identificadorCliente].saldo);
             break;
         case 4:
-            operaciones = operaciones - 1;
+            operaciones = operaciones + 1;
+            printf ("Ingrese el numero de cuenta al que quiere transferir dinero");
+            scanf ("%d", &nroCuentaMovimiento);
+            printf ("Ingrese el monto a transferirle a la cuenta %d", nroCuentaMovimiento);
+            scanf ("%d", &movimientoDinero);
+            for (int j = 0; j < 10; j++)
+            {
+                if (nroCuentaMovimiento = clientes[j].nroCuenta)
+                {
+                  clientes[identificadorCliente].saldo = clientes[identificadorCliente].saldo - movimientoDinero;
+                  clientes[j].saldo = clientes[j].saldo + movimientoDinero;
+                }
+            }
+            
+            
             break;
         case 5:
-            operaciones = operaciones - 1;
+            operaciones = operaciones + 1;
+            printf ("La cantidad de operaciones realizadas es de %d",operaciones);
+            printf ("Su saldo es %d",clientes[identificadorCliente].saldo);
 
             break;
         default:
             operaciones = 0;
             break;
         }
-    } while (operaciones > 0);
+    } while (operaciones < 10);
 }
 
 void inicializoEstructura(struct clientes clientes[10]) // funcion para cargar los datos fuera del main
