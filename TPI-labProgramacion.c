@@ -23,9 +23,10 @@ struct clientes
 // inicializo funciones
 void inicializoEstructura(struct clientes clientes[]);
 void escribirLineas();
+void setColor(int color); 
 int checkNroCliente(int *nro, struct clientes clientes[]);
 void checkContra(int *nro, struct clientes clientes[], int identificadorCliente, int *intentos, bool *chequeoIngreso);
-int checkMonto(float *nro, struct clientes clientes[], int identificadorCliente);
+int checkMonto(float *nro, struct clientes clientes[], int identificadorCliente, bool transferencia);
 void funcionCajero(int identificadorClienete, struct clientes clientes[]);
 
 void main()
@@ -35,7 +36,7 @@ void main()
     inicializoEstructura(clientes);
     int nroClienteIngresado, nroContraIngresado, identificadorCliente;
     int repetir = 1;
-    bool validacion = false, chequeoIngreso;
+    bool chequeoIngreso;
 
     do
     {
@@ -50,13 +51,33 @@ void main()
         scanf("%i", &nroClienteIngresado);
         identificadorCliente = checkNroCliente(&nroClienteIngresado, clientes);
         
-        escribirLineas();
-        printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
-        printf("Ingrese su contraseña: ");
-        scanf("%i", &nroContraIngresado);
-        checkContra(&nroContraIngresado, clientes, identificadorCliente, &intentos, &chequeoIngreso);
+        if (clientes[identificadorCliente].estado == 1)
+        {
+            escribirLineas();
+            printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
+            printf("Ingrese su contraseña: ");
+            scanf("%i", &nroContraIngresado);
+            checkContra(&nroContraIngresado, clientes, identificadorCliente, &intentos, &chequeoIngreso);
 
-        funcionCajero(identificadorCliente, clientes);
+            if (chequeoIngreso)
+            {
+                funcionCajero(identificadorCliente, clientes);
+            }
+            else
+            {
+                system("cls");
+                escribirLineas();
+                printf("Su cuenta esta bloqueada, comuniquese con la entidad bancaria.\n\n");
+                system("pause");
+            }
+        }
+        else
+        {
+            system("cls");
+            escribirLineas();
+            printf("Su cuenta esta bloqueada, comuniquese con la entidad bancaria.\n\n");
+            system("pause");
+        }
     }
     while (repetir = 1);
 }
@@ -73,7 +94,10 @@ int checkNroCliente(int *nro, struct clientes clientes[])
     {
         system("cls");
         escribirLineas();
-        printf("Numero de cuenta invalido. Ingrese nuevamente:");
+        setColor(FOREGROUND_RED);
+        printf("ERROR. "); 
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        printf("Numero de cuenta invalido. Ingrese nuevamente: ");
         scanf("%i", nro);
     }
 
@@ -94,6 +118,9 @@ int checkNroCliente(int *nro, struct clientes clientes[])
     {
         system("cls");
         escribirLineas();
+        setColor(FOREGROUND_RED);
+        printf("ERROR. "); 
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         printf("Numero de cuenta no encontrado. Intente nuevamente: ");
         scanf("%i", nro);
         identificador = checkNroCliente(nro, clientes);
@@ -114,6 +141,9 @@ void checkContra(int *nro, struct clientes clientes[], int identificadorCliente,
         system("cls");
         escribirLineas();
         printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
+        setColor(FOREGROUND_RED);
+        printf("ERROR. "); 
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         printf("Contraseña invalida. Intente nuevamente: ");
         scanf("%i", nro);
     }
@@ -128,35 +158,49 @@ void checkContra(int *nro, struct clientes clientes[], int identificadorCliente,
         (*intentos)--;
         escribirLineas();
         printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
+        setColor(FOREGROUND_RED);
+        printf("ERROR. "); 
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         printf("Contraseña incorrecta. Intentos restantes: %i\n", *intentos);
         printf("Ingrese nuevamente la contraseña: ");
         scanf("%i", nro);
         checkContra(nro, clientes, identificadorCliente, intentos, chequeoIngreso);
     }
-    else 
+    else if (!*chequeoIngreso)
     {
         clientes[identificadorCliente].estado = 0;
-        system("cls");
-        escribirLineas();
-        printf("Su cuenta está bloqueada, comuníquese con la entidad bancaria.\n\n");
-        system("pause");
     }
 }
 
 
-int checkMonto(float *nro, struct clientes clientes[], int identificadorCliente)
+int checkMonto(float *nro, struct clientes clientes[], int identificadorCliente, bool transferencia)
 {
     while (*nro < 0)
     {
+        system("cls");
+        escribirLineas();
+        setColor(FOREGROUND_RED);
+        printf("ERROR. "); 
+        setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         printf("Ingrese un monto valido: $");
         scanf("%f", nro);
     }
 
-    while (*nro > clientes[identificadorCliente].saldo)
+    if (transferencia)
     {
-        printf("Saldo insuficiente.");
-        printf("Ingrese un monto valido: $");
-        scanf("%f", nro);
+        while (*nro > clientes[identificadorCliente].saldo)
+        {
+            system("cls");
+            escribirLineas();
+            setColor(FOREGROUND_RED);
+            printf("Saldo insuficiente.\n");
+            setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            printf("Ingrese un monto valido: $");
+            scanf("%f", nro);
+            checkMonto(nro, clientes, identificadorCliente, transferencia);
+        }
+        // para que la llamada de recursividad chequee que sea > 0 pero no vuelva a entrar en el if
+        transferencia = false; 
     }
 }
 
@@ -164,8 +208,8 @@ int checkMonto(float *nro, struct clientes clientes[], int identificadorCliente)
 void funcionCajero(int identificadorCliente, struct clientes clientes[])
 {
     int opc, operaciones = 0;
-    float montoDeposito, montoRetiro;
-    int nroCuentaMovimiento, movimientoDinero;
+    float montoDeposito, montoRetiro, movimientoDinero;
+    int nroCuentaMovimiento;
     int identificadorTransferencia;
 
     do
@@ -187,7 +231,10 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
 
         while(opc < 1 || opc > 6)
         {
-            printf("\nERROR. Ingrese una opcion valida: ");
+            setColor(FOREGROUND_RED);
+            printf("ERROR. "); 
+            setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            printf("Ingrese una opcion valida: ");
             scanf("%i", &opc);
         }
 
@@ -208,6 +255,8 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
                 escribirLineas();
                 printf("Ingrese monto del Depósito: $");
                 scanf("%f", &montoDeposito);
+                checkMonto(&montoDeposito, clientes, identificadorCliente, false);
+
                 clientes[identificadorCliente].saldo += montoDeposito;
 
                 system("cls");
@@ -231,7 +280,9 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
                 escribirLineas();
                 printf("Ingrese monto del Retiro: $");
                 scanf("%f", &montoRetiro);
-                clientes[identificadorCliente].saldo = clientes[identificadorCliente].saldo - montoRetiro;
+                checkMonto(&montoRetiro, clientes, identificadorCliente, true);
+
+                clientes[identificadorCliente].saldo -= montoRetiro;
 
                 system("cls");
                 escribirLineas();
@@ -269,20 +320,35 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
             {
                 operaciones++;
                 escribirLineas();
-                printf("Saldo disponible: %d\n", clientes[identificadorCliente].saldo);
+                printf("Saldo disponible: %.2f\n", clientes[identificadorCliente].saldo);
                 escribirLineas();
                 printf("Numero de cuenta a transferir: ");
                 scanf("%d", &nroCuentaMovimiento);
                 identificadorTransferencia = checkNroCliente(&nroCuentaMovimiento, clientes);
 
-                printf("\nIngrese el monto a transferir: $");
+                escribirLineas();
+                printf("Ingrese el monto a transferir: $");
                 scanf("%f", &movimientoDinero);
-                checkMonto(&movimientoDinero, clientes, identificadorCliente);
+                checkMonto(&movimientoDinero, clientes, identificadorCliente, true);
 
-                clientes[identificadorCliente].saldo = clientes[identificadorCliente].saldo - movimientoDinero;
-                clientes[identificadorTransferencia].saldo = clientes[identificadorTransferencia].saldo + movimientoDinero;
+                clientes[identificadorCliente].saldo -= movimientoDinero;
+                clientes[identificadorTransferencia].saldo += movimientoDinero;
 
+                system("cls");
+                escribirLineas();
+                printf("De: ");
+                setColor(FOREGROUND_BLUE);
+                printf("%s", clientes[identificadorCliente].nombre);
+                setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                printf("\nNumero de cuenta: %i\n", clientes[identificadorCliente].nroCuenta);
 
+                escribirLineas();
+                printf("Para: ");
+                setColor(FOREGROUND_GREEN);
+                printf("%s", clientes[identificadorTransferencia].nombre);
+                setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                printf("\nNumero de cuenta: %i\n\n", clientes[identificadorTransferencia].nroCuenta);
+                system("pause");
             }
 
             break;
@@ -299,6 +365,7 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
                 operaciones++;
                 escribirLineas();
                 printf("Cantidad de operaciones realizadas: %d\n\n", operaciones);
+                printf("Su saldo es: $%.2f\n\n", clientes[identificadorCliente].saldo);
                 system("pause");
             }
 
@@ -318,7 +385,15 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
 
 void escribirLineas()
 {
+    setColor(FOREGROUND_INTENSITY);
     printf("---------------------------------------------\n");
+    setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
+
+
+void setColor(int color) 
+{
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
 }
 
 
