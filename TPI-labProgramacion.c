@@ -16,7 +16,7 @@ struct clientes
 // inicializo funciones
 void inicializoEstructura(struct clientes clientes[]);
 int checkNroCliente(int *nro, struct clientes clientes[]);
-void checkContra(int *nro, struct clientes clientes[], int *identificadorCliente, int *intentos);
+void checkContra(int *nro, struct clientes clientes[], int identificadorCliente, int *intentos, bool *chequeoIngreso);
 int validarUsuario(int nroClienteIngresado, int nroContraIngresado, int valido, int identificadorCliente, struct clientes clientes[]);
 void funcionCajero(int identificadorClienete, struct clientes clientes[]);
 
@@ -24,86 +24,24 @@ void main()
 {
     int tam = 10, nroClienteIngresado, nroContraIngresado;
     struct clientes clientes[10];
-    // system("cls"); // sirve para limpiar la pantalla
     inicializoEstructura(clientes);
-    int ClienteIngresado, ContraIngresado;
-    bool validacion = false;
-    int identificadorCliente, intentos = 3;
+    bool validacion = false, chequeoIngreso;
+    int identificadorCliente;
     int identificadorClienteRiesgo = -1;
-    int alerta = 0;
     int aux,aux2, repetir = 1;
 
     do
     {
-
+        int intentos = 3;
         printf("**********BIENVENIDO**********\n\n");
         printf("Por favor, ingrese su numero de cuenta: ");
         scanf("%i", &nroClienteIngresado);
         identificadorCliente = checkNroCliente(&nroClienteIngresado, clientes);
         printf("Ingrese su contraseña: ");
         scanf("%i", &nroContraIngresado);
-        checkContra(&nroContraIngresado, clientes, &identificadorCliente, &intentos);
-
-
-        for (int i = 0; i < 10; i++)
-        {
-            if (nroClienteIngresado == clientes[i].nroCuenta && nroContraIngresado == clientes[i].contra)
-            {
-                identificadorCliente = i;
-                validacion = true;
-            }
-            
-            if (nroClienteIngresado == clientes[i].nroCuenta && nroContraIngresado != clientes[i].contra)
-            {
-                identificadorClienteRiesgo = i;
-               if (identificadorClienteRiesgo == aux)
-               {
-                aux2 = i;
-               }
-                
-            }
-
-            if (nroClienteIngresado == clientes[i].nroCuenta && nroContraIngresado != clientes[i].contra && intentos < 3)
-            {
-               
-                aux = identificadorClienteRiesgo;
-                
-            }
-            if (nroClienteIngresado == clientes[i].nroCuenta && nroContraIngresado != clientes[i].contra && identificadorClienteRiesgo == aux2)
-            {
-                alerta = alerta + 1;
-            }
-        }
-        if (validacion == false)
-        {
-            printf("Numero de cuenta o contrasenia incorrecta\n");
-            intentos = intentos - 1;
-        }
-
-        if ((validacion == true)  && (clientes[identificadorCliente].estado == 1))
-        {
-            funcionCajero(identificadorCliente, clientes);
- 
-        }
-        printf ("El valor de identificadorCliente es : %d\n",identificadorCliente);
-        if ((validacion == true) && (clientes[identificadorCliente].estado == 0))
-        {
-            printf("Su cuenta esta bloqueada; comuniquese con la entidad bancaria\n");
-        }
-        identificadorCliente = -1;
-        validacion = false;
-
-        if (alerta == 1)
-        {
-            printf("No se permiten más intentos. Su cuenta ha sido bloqueada; comuniquese con la entidad bancaria.\n");
-            clientes[identificadorClienteRiesgo].estado = 0;
-            alerta = 0;
-            identificadorClienteRiesgo = -1;
-            aux = -1;
-            aux2 = -1;
-        }
-
-    } while (repetir == 1);
+        checkContra(&nroContraIngresado, clientes, identificadorCliente, &intentos, &chequeoIngreso);
+    }
+    while (repetir = 1);
 }
 
 int checkNroCliente(int *nro, struct clientes clientes[])
@@ -123,7 +61,7 @@ int checkNroCliente(int *nro, struct clientes clientes[])
 
     while (i < 9 && !encontrado)
     {
-        if (clientes[i].nroCuenta == nro)
+        if (clientes[i].nroCuenta == *nro)
         {
             encontrado = true;
             identificador = i;
@@ -139,7 +77,7 @@ int checkNroCliente(int *nro, struct clientes clientes[])
         system("cls");
         printf("Numero de cuenta no encontrado. Intente nuevamente: ");
         scanf("%i", nro);
-        identificador = checkNroCliente(&nro, clientes);
+        identificador = checkNroCliente(nro, clientes);
     }
     else 
     {
@@ -148,9 +86,9 @@ int checkNroCliente(int *nro, struct clientes clientes[])
 }
 
 
-void checkContra(int *nro, struct clientes clientes[], int *identificadorCliente, int *intentos)
+void checkContra(int *nro, struct clientes clientes[], int identificadorCliente, int *intentos, bool *chequeoIngreso)
 {
-    bool ingresoCorrecto;
+    *chequeoIngreso = false;
 
     while (*nro < 1000 || *nro > 9999)
     {
@@ -159,16 +97,27 @@ void checkContra(int *nro, struct clientes clientes[], int *identificadorCliente
         scanf("%i", nro);
     }
 
-    while (clientes[*identificadorCliente].contra != nro && intentos > 0)
+    if (clientes[identificadorCliente].contra == *nro && *intentos >= 0)
     {
-        intentos--;
-        printf("Contraseña incorrecta. Intentos restantes: ", intentos);
+        *chequeoIngreso = true;
+    }
+    else if (clientes[identificadorCliente].contra != *nro && *intentos > 1)
+    {
+        system("cls");
+        (*intentos)--;
+        printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
+        printf("Contraseña incorrecta. Intentos restantes: %i\n", *intentos);
         printf("Ingrese nuevamente la contraseña: ");
         scanf("%i", nro);
-        checkContra(&nro, clientes, &identificadorCliente, &intentos);
+        checkContra(nro, clientes, identificadorCliente, intentos, chequeoIngreso);
     }
-
-
+    else 
+    {
+        system("cls");
+        clientes[identificadorCliente].estado = 0;
+        printf("Su cuenta está bloqueada, comuníquese con la entidad bancaria.\n\n");
+        system("pause");
+    }
 }
 
 
