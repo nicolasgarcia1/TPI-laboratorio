@@ -1,7 +1,14 @@
+/*
+integrantes del grupo: 
+Facundo Solari
+Nicolas Garcia
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
+#include <stdbool.h> // incluye booleanos en c
+#include <windows.h> // incluye Sleep
 
 // inicializo clase clientes
 struct clientes
@@ -9,37 +16,47 @@ struct clientes
     int nroCuenta;
     int contra;
     char nombre[60];
-    int saldo;
+    float saldo;
     int estado;
 };
 
 // inicializo funciones
 void inicializoEstructura(struct clientes clientes[]);
+void escribirLineas();
 int checkNroCliente(int *nro, struct clientes clientes[]);
 void checkContra(int *nro, struct clientes clientes[], int identificadorCliente, int *intentos, bool *chequeoIngreso);
-int validarUsuario(int nroClienteIngresado, int nroContraIngresado, int valido, int identificadorCliente, struct clientes clientes[]);
+int checkMonto(float *nro, struct clientes clientes[], int identificadorCliente);
 void funcionCajero(int identificadorClienete, struct clientes clientes[]);
 
 void main()
 {
-    int tam = 10, nroClienteIngresado, nroContraIngresado;
+    
     struct clientes clientes[10];
     inicializoEstructura(clientes);
+    int nroClienteIngresado, nroContraIngresado, identificadorCliente;
+    int repetir = 1;
     bool validacion = false, chequeoIngreso;
-    int identificadorCliente;
-    int identificadorClienteRiesgo = -1;
-    int aux,aux2, repetir = 1;
 
     do
     {
         int intentos = 3;
-        printf("**********BIENVENIDO**********\n\n");
-        printf("Por favor, ingrese su numero de cuenta: ");
+
+        // sirve para limpiar la pantalla
+        system("cls"); 
+
+        printf("**************** BIENVENIDO ****************\n");
+        escribirLineas();
+        printf("Ingrese su numero de cuenta: ");
         scanf("%i", &nroClienteIngresado);
         identificadorCliente = checkNroCliente(&nroClienteIngresado, clientes);
+        
+        escribirLineas();
+        printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
         printf("Ingrese su contraseña: ");
         scanf("%i", &nroContraIngresado);
         checkContra(&nroContraIngresado, clientes, identificadorCliente, &intentos, &chequeoIngreso);
+
+        funcionCajero(identificadorCliente, clientes);
     }
     while (repetir = 1);
 }
@@ -55,6 +72,7 @@ int checkNroCliente(int *nro, struct clientes clientes[])
     while (*nro < 100 || *nro > 999)
     {
         system("cls");
+        escribirLineas();
         printf("Numero de cuenta invalido. Ingrese nuevamente:");
         scanf("%i", nro);
     }
@@ -75,6 +93,7 @@ int checkNroCliente(int *nro, struct clientes clientes[])
     if (!encontrado)
     {
         system("cls");
+        escribirLineas();
         printf("Numero de cuenta no encontrado. Intente nuevamente: ");
         scanf("%i", nro);
         identificador = checkNroCliente(nro, clientes);
@@ -93,6 +112,8 @@ void checkContra(int *nro, struct clientes clientes[], int identificadorCliente,
     while (*nro < 1000 || *nro > 9999)
     {
         system("cls");
+        escribirLineas();
+        printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
         printf("Contraseña invalida. Intente nuevamente: ");
         scanf("%i", nro);
     }
@@ -105,6 +126,7 @@ void checkContra(int *nro, struct clientes clientes[], int identificadorCliente,
     {
         system("cls");
         (*intentos)--;
+        escribirLineas();
         printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
         printf("Contraseña incorrecta. Intentos restantes: %i\n", *intentos);
         printf("Ingrese nuevamente la contraseña: ");
@@ -113,10 +135,28 @@ void checkContra(int *nro, struct clientes clientes[], int identificadorCliente,
     }
     else 
     {
-        system("cls");
         clientes[identificadorCliente].estado = 0;
+        system("cls");
+        escribirLineas();
         printf("Su cuenta está bloqueada, comuníquese con la entidad bancaria.\n\n");
         system("pause");
+    }
+}
+
+
+int checkMonto(float *nro, struct clientes clientes[], int identificadorCliente)
+{
+    while (*nro < 0)
+    {
+        printf("Ingrese un monto valido: $");
+        scanf("%f", nro);
+    }
+
+    while (*nro > clientes[identificadorCliente].saldo)
+    {
+        printf("Saldo insuficiente.");
+        printf("Ingrese un monto valido: $");
+        scanf("%f", nro);
     }
 }
 
@@ -124,98 +164,163 @@ void checkContra(int *nro, struct clientes clientes[], int identificadorCliente,
 void funcionCajero(int identificadorCliente, struct clientes clientes[])
 {
     int opc, operaciones = 0;
-    int montoMas, montoMenos;
+    float montoDeposito, montoRetiro;
     int nroCuentaMovimiento, movimientoDinero;
-    int aux1, aux2;
+    int identificadorTransferencia;
+
     do
     {
+        bool encontrado = false;
+        int j = 0;
+
+        system("cls");
+        escribirLineas();
         printf("1. Realizar un Deposito.\n");
         printf("2. Realizar una Extraccion.\n");
         printf("3. Consultar el Saldo de la Cuenta.\n");
         printf("4. Realizar una Transferencia entre Cuentas.\n");
         printf("5. Mostrar cantidad de Operaciones Realizadas y Saldo Actual.\n");
         printf("6. Salir de la Sesion.\n");
-        do
+        escribirLineas();
+        printf("Seleccione una opcion: ");
+        scanf("%i", &opc);
+
+        while(opc < 1 || opc > 6)
         {
-            scanf("%d", &opc);
-        } while (opc > 6 || opc < 1);
+            printf("\nERROR. Ingrese una opcion valida: ");
+            scanf("%i", &opc);
+        }
+
+        system("cls");
 
         switch (opc)
         {
         case 1:
-            operaciones = operaciones + 1;
-            printf("Ingrese monto del Depósito\n");
-            scanf("%d", &montoMas);
-            clientes[identificadorCliente].saldo = clientes[identificadorCliente].saldo + montoMas;
             if (operaciones == 10)
             {
-                printf("Ha alcanzado el limite de operaciones. Gracias. Para continuar, el cliente debe iniciar sesion nuevamente");
+                escribirLineas();
+                printf("Ha alcanzado el limite de operaciones. Gracias.");
+                Sleep(2250); // espera 2.25 segundos y sale (2250 ms)
             }
+            else
+            {      
+                operaciones++;
+                escribirLineas();
+                printf("Ingrese monto del Depósito: $");
+                scanf("%f", &montoDeposito);
+                clientes[identificadorCliente].saldo += montoDeposito;
+
+                system("cls");
+                escribirLineas();
+                printf("Saldo actual: $%.2f\n\n", clientes[identificadorCliente].saldo);
+                Sleep(2250);
+            }
+
             break;
 
         case 2:
-            operaciones = operaciones + 1;
-            printf("Ingrese monto del Retiro\n");
-
-            scanf("%d", &montoMenos);
-            clientes[identificadorCliente].saldo = clientes[identificadorCliente].saldo - montoMenos;
             if (operaciones == 10)
             {
-                printf("Ha alcanzado el limite de operaciones. Gracias. Para continuar, el cliente debe iniciar sesion nuevamente");
+                escribirLineas();
+                printf("Ha alcanzado el limite de operaciones. Gracias.");
+                Sleep(2250);
+            }
+            else
+            {
+                operaciones++;
+                escribirLineas();
+                printf("Ingrese monto del Retiro: $");
+                scanf("%f", &montoRetiro);
+                clientes[identificadorCliente].saldo = clientes[identificadorCliente].saldo - montoRetiro;
+
+                system("cls");
+                escribirLineas();
+                printf("Saldo actual: $%.2f", clientes[identificadorCliente].saldo);
+                Sleep(2250);
             }
 
             break;
+
         case 3:
-            operaciones = operaciones + 1;
-            printf("Su saldo es %d", clientes[identificadorCliente].saldo);
             if (operaciones == 10)
             {
-                printf("Ha alcanzado el limite de operaciones. Gracias. Para continuar, el cliente debe iniciar sesion nuevamente");
+                escribirLineas();
+                printf("Ha alcanzado el limite de operaciones. Gracias.");
+                Sleep(2250);
+            }
+            else
+            {
+                operaciones++;
+                escribirLineas();
+                printf("Su saldo es: $%.2f\n\n", clientes[identificadorCliente].saldo);
+                system("pause");
             }
 
             break;
+
         case 4:
-            printf("Saldo del cliente en 1 antes de la transferencia es : %d\n", clientes[1].saldo);
-            operaciones = operaciones + 1;
-            printf("Ingrese el numero de cuenta al que quiere transferir dinero\n");
-            scanf("%d", &nroCuentaMovimiento);
-            printf("Ingrese el monto a transferirle a la cuenta %d\n", nroCuentaMovimiento);
-            scanf("%d", &movimientoDinero);
-            for (int j = 0; j < 10; j++)
-            {
-                if (nroCuentaMovimiento == clientes[j].nroCuenta)
-                {
-                    clientes[identificadorCliente].saldo = clientes[identificadorCliente].saldo - movimientoDinero;
-                    clientes[j].saldo = clientes[j].saldo + movimientoDinero;
-                }
-            }
             if (operaciones == 10)
             {
-                printf("Ha alcanzado el limite de operaciones. Gracias. Para continuar, el cliente debe iniciar sesion nuevamente");
+                escribirLineas();
+                printf("Ha alcanzado el limite de operaciones. Gracias.");
+                Sleep(2250);
+            }
+            else
+            {
+                operaciones++;
+                escribirLineas();
+                printf("Saldo disponible: %d\n", clientes[identificadorCliente].saldo);
+                escribirLineas();
+                printf("Numero de cuenta a transferir: ");
+                scanf("%d", &nroCuentaMovimiento);
+                identificadorTransferencia = checkNroCliente(&nroCuentaMovimiento, clientes);
+
+                printf("\nIngrese el monto a transferir: $");
+                scanf("%f", &movimientoDinero);
+                checkMonto(&movimientoDinero, clientes, identificadorCliente);
+
+                clientes[identificadorCliente].saldo = clientes[identificadorCliente].saldo - movimientoDinero;
+                clientes[identificadorTransferencia].saldo = clientes[identificadorTransferencia].saldo + movimientoDinero;
+
+
             }
 
             break;
+
         case 5:
-            operaciones = operaciones + 1;
-            printf("La cantidad de operaciones realizadas es de %d", operaciones);
-            printf("Su saldo es %d", clientes[identificadorCliente].saldo);
             if (operaciones == 10)
             {
-                printf("Ha alcanzado el limite de operaciones. Gracias. Para continuar, el cliente debe iniciar sesion nuevamente");
+                escribirLineas();
+                printf("Ha alcanzado el limite de operaciones. Gracias.");
+                Sleep(2250);
+            }
+            else
+            {
+                operaciones++;
+                escribirLineas();
+                printf("Cantidad de operaciones realizadas: %d\n\n", operaciones);
+                system("pause");
             }
 
             break;
+
         case 6:
-            operaciones = 10;
+            escribirLineas();
+            printf("Gracias por elegirnos. Hasta la proxima.");
+            Sleep(2250);
+
             break;
+
         }
-    } while (operaciones < 10);
+    } while (opc != 6);
 }
 
-int validarUsuario(int nroClienteIngresado, int nroContraIngresado, int valido, int identificadorCliente, struct clientes clientes[])
+
+void escribirLineas()
 {
-
+    printf("---------------------------------------------\n");
 }
+
 
 void inicializoEstructura(struct clientes clientes[]) // funcion para cargar los datos fuera del main
 {
