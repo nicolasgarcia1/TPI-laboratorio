@@ -175,7 +175,7 @@ void checkContra(int *nro, struct clientes clientes[], int identificadorCliente,
 
 int checkMonto(float *nro, struct clientes clientes[], int identificadorCliente, bool transferencia)
 {
-    while (*nro < 0)
+    while (*nro <= 0)
     {
         system("cls");
         escribirLineas();
