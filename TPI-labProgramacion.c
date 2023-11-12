@@ -8,7 +8,7 @@ Nicolas Garcia
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h> // incluye booleanos en c
-#include <windows.h> // incluye Sleep
+#include <windows.h> // incluye funcion Sleep
 
 // inicializo clase clientes
 struct clientes
@@ -20,14 +20,24 @@ struct clientes
     int estado;
 };
 
-// inicializo funciones
+/*
+ --------------------
+ inicializo funciones
+ --------------------
+ notas: 
+  -si se trata de una transferencia, checkNroCliente recibe un booleano true y el numero de la persona que emite la transferencia en las variables "transferencia" y "ordenante" respectivamente, o recibe un false y un -1 en caso contrario
+
+  -si se trata de una transferencia, checkMonto recibe un booleano true en la variable "transferencia", o un false en caso contrario
+*/
+
 void inicializoEstructura(struct clientes clientes[]);
-void escribirLineas();
-void setColor(int color); 
-int checkNroCliente(int *nro, struct clientes clientes[]);
+int checkNroCliente(int *nro, struct clientes clientes[], bool transferencia, int ordenante);
 void checkContra(int *nro, struct clientes clientes[], int identificadorCliente, int *intentos, bool *chequeoIngreso);
 int checkMonto(float *nro, struct clientes clientes[], int identificadorCliente, bool transferencia);
 void funcionCajero(int identificadorClienete, struct clientes clientes[]);
+void escribirLineas();
+void setColor(int color); 
+
 
 void main()
 {
@@ -42,20 +52,18 @@ void main()
     {
         int intentos = 3;
 
-        // sirve para limpiar la pantalla
-        system("cls"); 
-
+        system("cls"); // sirve para limpiar la pantalla
         printf("**************** BIENVENIDO ****************\n");
         escribirLineas();
-        printf("Ingrese su numero de cuenta: ");
+        printf("Ingrese su n%cmero de cuenta: ", 163);
         scanf("%i", &nroClienteIngresado);
-        identificadorCliente = checkNroCliente(&nroClienteIngresado, clientes);
+        identificadorCliente = checkNroCliente(&nroClienteIngresado, clientes, false, -1);
         
         if (clientes[identificadorCliente].estado == 1)
         {
             escribirLineas();
-            printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
-            printf("Ingrese su contraseña: ");
+            printf("N%cmero de cuenta: %i\n\n", 163, clientes[identificadorCliente].nroCuenta);
+            printf("Ingrese su contrase%ca: ", 164);
             scanf("%i", &nroContraIngresado);
             checkContra(&nroContraIngresado, clientes, identificadorCliente, &intentos, &chequeoIngreso);
 
@@ -67,7 +75,7 @@ void main()
             {
                 system("cls");
                 escribirLineas();
-                printf("Su cuenta esta bloqueada, comuniquese con la entidad bancaria.\n\n");
+                printf("Su cuenta est%c bloqueada, comun%cquese con la entidad bancaria.\n\n", 160, 161);
                 system("pause");
             }
         }
@@ -75,14 +83,14 @@ void main()
         {
             system("cls");
             escribirLineas();
-            printf("Su cuenta esta bloqueada, comuniquese con la entidad bancaria.\n\n");
+            printf("Su cuenta est%c bloqueada, comun%cquese con la entidad bancaria.\n\n", 160, 161);
             system("pause");
         }
     }
-    while (repetir = 1);
+    while (repetir = 1); // se va a repetir infinitamente como pide el enunciado
 }
 
-int checkNroCliente(int *nro, struct clientes clientes[])
+int checkNroCliente(int *nro, struct clientes clientes[], bool transferencia, int ordenante)
 {
     system("cls");
 
@@ -97,7 +105,7 @@ int checkNroCliente(int *nro, struct clientes clientes[])
         setColor(FOREGROUND_RED);
         printf("ERROR. "); 
         setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-        printf("Numero de cuenta invalido. Ingrese nuevamente: ");
+        printf("N%cmero de cuenta inv%clido. Ingrese nuevamente: ", 163, 160);
         scanf("%i", nro);
     }
 
@@ -121,14 +129,27 @@ int checkNroCliente(int *nro, struct clientes clientes[])
         setColor(FOREGROUND_RED);
         printf("ERROR. "); 
         setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-        printf("Numero de cuenta no encontrado. Intente nuevamente: ");
+        printf("N%cmero de cuenta no encontrado. Intente nuevamente: ", 163);
         scanf("%i", nro);
-        identificador = checkNroCliente(nro, clientes);
+        identificador = checkNroCliente(nro, clientes, false, -1);
     }
-    else 
+
+    if (transferencia)
     {
-        return identificador;
+        if(clientes[ordenante].nroCuenta == *nro)
+        {
+            escribirLineas();
+            setColor(FOREGROUND_RED);
+            printf("ERROR. ");
+            setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            printf("No puede realizar una transferencia a su propia cuenta.\n");
+            printf("N%cmero de cuenta a transferir: ", 163);
+            scanf("%d", nro);
+            identificador = checkNroCliente(nro, clientes, true, ordenante);
+        }
     }
+
+    return identificador;
 }
 
 
@@ -140,11 +161,11 @@ void checkContra(int *nro, struct clientes clientes[], int identificadorCliente,
     {
         system("cls");
         escribirLineas();
-        printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
+        printf("N%cmero de cuenta: %i\n\n", 163, clientes[identificadorCliente].nroCuenta);
         setColor(FOREGROUND_RED);
         printf("ERROR. "); 
         setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-        printf("Contraseña invalida. Intente nuevamente: ");
+        printf("Contrase%ca inv%clida. Intente nuevamente: ", 164, 160);
         scanf("%i", nro);
     }
 
@@ -157,12 +178,12 @@ void checkContra(int *nro, struct clientes clientes[], int identificadorCliente,
         system("cls");
         (*intentos)--;
         escribirLineas();
-        printf("Numero de cuenta: %i\n\n", clientes[identificadorCliente].nroCuenta);
+        printf("N%cmero de cuenta: %i\n\n", 163, clientes[identificadorCliente].nroCuenta);
         setColor(FOREGROUND_RED);
         printf("ERROR. "); 
         setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-        printf("Contraseña incorrecta. Intentos restantes: %i\n", *intentos);
-        printf("Ingrese nuevamente la contraseña: ");
+        printf("Contrase%ca incorrecta. Intentos restantes: %i\n", 164, *intentos);
+        printf("Ingrese nuevamente la contrase%ca: ", 164);
         scanf("%i", nro);
         checkContra(nro, clientes, identificadorCliente, intentos, chequeoIngreso);
     }
@@ -182,25 +203,23 @@ int checkMonto(float *nro, struct clientes clientes[], int identificadorCliente,
         setColor(FOREGROUND_RED);
         printf("ERROR. "); 
         setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-        printf("Ingrese un monto valido: $");
+        printf("Ingrese un monto v%clido: $", 160);
         scanf("%f", nro);
     }
 
     if (transferencia)
     {
-        while (*nro > clientes[identificadorCliente].saldo)
+        if (*nro > clientes[identificadorCliente].saldo)
         {
             system("cls");
             escribirLineas();
             setColor(FOREGROUND_RED);
             printf("Saldo insuficiente.\n");
             setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            printf("Ingrese un monto valido: $");
+            printf("Ingrese un monto v%clido: $", 160);
             scanf("%f", nro);
             checkMonto(nro, clientes, identificadorCliente, transferencia);
         }
-        // para que la llamada de recursividad chequee que sea > 0 pero no vuelva a entrar en el if
-        transferencia = false; 
     }
 }
 
@@ -219,14 +238,14 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
 
         system("cls");
         escribirLineas();
-        printf("1. Realizar un Deposito.\n");
-        printf("2. Realizar una Extraccion.\n");
+        printf("1. Realizar un Dep%csito.\n", 162);
+        printf("2. Realizar una Extracci%cn.\n", 162);
         printf("3. Consultar el Saldo de la Cuenta.\n");
         printf("4. Realizar una Transferencia entre Cuentas.\n");
         printf("5. Mostrar cantidad de Operaciones Realizadas y Saldo Actual.\n");
-        printf("6. Salir de la Sesion.\n");
+        printf("6. Salir de la Sesi%cn.\n", 162);
         escribirLineas();
-        printf("Seleccione una opcion: ");
+        printf("Seleccione una opci%cn: ", 162);
         scanf("%i", &opc);
 
         while(opc < 1 || opc > 6)
@@ -234,7 +253,7 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
             setColor(FOREGROUND_RED);
             printf("ERROR. "); 
             setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            printf("Ingrese una opcion valida: ");
+            printf("Ingrese una opci%cn v%clida: ", 162, 160);
             scanf("%i", &opc);
         }
 
@@ -246,14 +265,14 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
             if (operaciones == 10)
             {
                 escribirLineas();
-                printf("Ha alcanzado el limite de operaciones. Gracias.");
+                printf("Ha alcanzado el l%cmite de operaciones. Gracias.", 161);
                 Sleep(2250); // espera 2.25 segundos y sale (2250 ms)
             }
             else
             {      
                 operaciones++;
                 escribirLineas();
-                printf("Ingrese monto del Depósito: $");
+                printf("Ingrese monto del Dep%csito: $", 162);
                 scanf("%f", &montoDeposito);
                 checkMonto(&montoDeposito, clientes, identificadorCliente, false);
 
@@ -271,23 +290,34 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
             if (operaciones == 10)
             {
                 escribirLineas();
-                printf("Ha alcanzado el limite de operaciones. Gracias.");
+                printf("Ha alcanzado el l%cmite de operaciones. Gracias.", 161);
                 Sleep(2250);
             }
             else
             {
                 operaciones++;
-                escribirLineas();
-                printf("Ingrese monto del Retiro: $");
-                scanf("%f", &montoRetiro);
-                checkMonto(&montoRetiro, clientes, identificadorCliente, true);
+                if (clientes[identificadorCliente].saldo == 0)
+                {
+                    escribirLineas();
+                    setColor(FOREGROUND_RED);
+                    printf("No posee fondos disponibles en su cuenta.");
+                    setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                    Sleep(2250);
+                }
+                else
+                {
+                    escribirLineas();
+                    printf("Ingrese monto del Retiro: $");
+                    scanf("%f", &montoRetiro);
+                    checkMonto(&montoRetiro, clientes, identificadorCliente, true);
 
-                clientes[identificadorCliente].saldo -= montoRetiro;
+                    clientes[identificadorCliente].saldo -= montoRetiro;
 
-                system("cls");
-                escribirLineas();
-                printf("Saldo actual: $%.2f", clientes[identificadorCliente].saldo);
-                Sleep(2250);
+                    system("cls");
+                    escribirLineas();
+                    printf("Saldo actual: $%.2f", clientes[identificadorCliente].saldo);
+                    Sleep(2250);
+                }
             }
 
             break;
@@ -296,7 +326,7 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
             if (operaciones == 10)
             {
                 escribirLineas();
-                printf("Ha alcanzado el limite de operaciones. Gracias.");
+                printf("Ha alcanzado el l%cmite de operaciones. Gracias.", 161);
                 Sleep(2250);
             }
             else
@@ -313,42 +343,58 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
             if (operaciones == 10)
             {
                 escribirLineas();
-                printf("Ha alcanzado el limite de operaciones. Gracias.");
+                printf("Ha alcanzado el l%cmite de operaciones. Gracias.", 161);
                 Sleep(2250);
             }
             else
             {
                 operaciones++;
-                escribirLineas();
-                printf("Saldo disponible: %.2f\n", clientes[identificadorCliente].saldo);
-                escribirLineas();
-                printf("Numero de cuenta a transferir: ");
-                scanf("%d", &nroCuentaMovimiento);
-                identificadorTransferencia = checkNroCliente(&nroCuentaMovimiento, clientes);
 
-                escribirLineas();
-                printf("Ingrese el monto a transferir: $");
-                scanf("%f", &movimientoDinero);
-                checkMonto(&movimientoDinero, clientes, identificadorCliente, true);
+                if (clientes[identificadorCliente].saldo == 0)
+                {
+                    escribirLineas();
+                    setColor(FOREGROUND_RED);
+                    printf("No posee fondos disponibles en su cuenta.");
+                    setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                    Sleep(2250);
+                }
+                else 
+                {
+                    escribirLineas();
+                    printf("N%cmero de cuenta a transferir: ", 163);
+                    scanf("%d", &nroCuentaMovimiento);
+                    identificadorTransferencia = checkNroCliente(&nroCuentaMovimiento, clientes, true, identificadorCliente);
+                    
 
-                clientes[identificadorCliente].saldo -= movimientoDinero;
-                clientes[identificadorTransferencia].saldo += movimientoDinero;
+                    escribirLineas();
+                    printf("Saldo disponible: %.2f\n", clientes[identificadorCliente].saldo);
+                    escribirLineas();
+                    printf("Ingrese el monto a transferir: $");
+                    scanf("%f", &movimientoDinero);
+                    checkMonto(&movimientoDinero, clientes, identificadorCliente, true);
 
-                system("cls");
-                escribirLineas();
-                printf("De: ");
-                setColor(FOREGROUND_BLUE);
-                printf("%s", clientes[identificadorCliente].nombre);
-                setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                printf("\nNumero de cuenta: %i\n", clientes[identificadorCliente].nroCuenta);
+                    clientes[identificadorCliente].saldo -= movimientoDinero;
+                    clientes[identificadorTransferencia].saldo += movimientoDinero;
 
-                escribirLineas();
-                printf("Para: ");
-                setColor(FOREGROUND_GREEN);
-                printf("%s", clientes[identificadorTransferencia].nombre);
-                setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                printf("\nNumero de cuenta: %i\n\n", clientes[identificadorTransferencia].nroCuenta);
-                system("pause");
+                    system("cls");
+                    escribirLineas();
+                    printf("                 $%.2f\n", movimientoDinero);
+                    escribirLineas();
+                    printf(" De: ");
+                    setColor(FOREGROUND_BLUE);
+                    printf(" %s", clientes[identificadorCliente].nombre);
+                    setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                    printf("\n N%cmero de cuenta: %i\n", 163, clientes[identificadorCliente].nroCuenta);
+
+                    escribirLineas();
+                    printf(" Para: ");
+                    setColor(FOREGROUND_GREEN);
+                    printf(" %s", clientes[identificadorTransferencia].nombre);
+                    setColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                    printf("\n N%cmero de cuenta: %i\n", 163, clientes[identificadorTransferencia].nroCuenta);
+                    escribirLineas();
+                    system("pause");
+                }
             }
 
             break;
@@ -357,7 +403,7 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
             if (operaciones == 10)
             {
                 escribirLineas();
-                printf("Ha alcanzado el limite de operaciones. Gracias.");
+                printf("Ha alcanzado el l%cmite de operaciones. Gracias.", 161);
                 Sleep(2250);
             }
             else
