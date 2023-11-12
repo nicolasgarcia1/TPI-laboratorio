@@ -365,7 +365,7 @@ void funcionCajero(int identificadorCliente, struct clientes clientes[])
                     scanf("%d", &nroCuentaMovimiento);
                     identificadorTransferencia = checkNroCliente(&nroCuentaMovimiento, clientes, true, identificadorCliente);
                     
-
+                    system("cls");
                     escribirLineas();
                     printf("Saldo disponible: %.2f\n", clientes[identificadorCliente].saldo);
                     escribirLineas();
